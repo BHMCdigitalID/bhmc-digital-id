@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Verification endpoint scanned by phones
 app.get('/verify/:id', (req, res) => {
-  const users = JSON.parse(fs.readFileSync('./data/users.json', 'utf-8'));
+  const users = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'users.json'), 'utf-8'));
   const user = users.find(u => u.id.toLowerCase() === req.params.id.toLowerCase());
 
   if (!user) {
@@ -25,3 +25,4 @@ app.get('/verify/:id', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Verification server running at http://localhost:${PORT}`);
 });
+module.exports = app;
