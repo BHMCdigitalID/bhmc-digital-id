@@ -1,21 +1,14 @@
-"scripts": {
-  "start": "node server.js"
-}
 {
-  "name": "qr-id-system",
+  "name": "bhmc-digital-id",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "BHMC Digital ID Verification System",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "ejs": "^6.0.1",
-    "express": "^5.2.1",
-    "qrcode": "^1.5.4"
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "qrcode": "^1.5.3"
   }
 }
