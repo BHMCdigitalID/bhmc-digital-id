@@ -1,0 +1,27 @@
+[
+  {
+    "id": "ADM-766",
+    "fullName": "JUAN LAMBERTO T. HUERTE",
+    "role": "IT SUPER VISOR",
+    "department": "IT DEPARTMENT",
+    "status": "ACTIVE",
+    "issuedDate": "2023-07-31",
+    "expiryDate": "",
+    "photoUrl": "/images/ADM-766.png",
+    "email": "itunithead.bhmc@gmail.com",
+    "phone": "+63 912 345 6789"
+    
+  },
+  {
+    "id": "ADM-",
+    "fullName": "KARLVEE IAN V. FIESTA",
+    "role": "IT STAFF",
+    "department": "IT DEPARTMENT",
+    "status": "ACTIVE",
+    "issuedDate": "2024-11-10",
+    "expiryDate": "",
+    "photoUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80",
+    "email": "bhmc.mis@gmail.com",
+    "phone": "+63 918 765 4321"
+  }
+]

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Verification: <%= user.fullName %></title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+    body { background: #f0f2f5; display: flex; justify-content: center; padding: 24px 16px; }
+    .card { background: #ffffff; max-width: 380px; width: 100%; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e1e4e8; }
+    .header { background: #1a1a2e; color: #ffffff; text-align: center; padding: 20px; }
+    .header h2 { font-size: 16px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9; }
+    .content { padding: 24px; text-align: center; }
+    .avatar { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: -65px; background: #eee; }
+    .name { font-size: 20px; font-weight: 700; color: #222; margin-top: 12px; }
+    .role { font-size: 14px; color: #555; margin-bottom: 4px; }
+    .dept { font-size: 13px; color: #888; margin-bottom: 16px; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+    .badge.ACTIVE { background: #e6f9ed; color: #1e7e34; border: 1px solid #c3e6cb; }
+    .badge.EXPIRED { background: #fdf0f0; color: #d92525; border: 1px solid #f5c6cb; }
+    .info-list { margin-top: 20px; text-align: left; font-size: 13px; border-top: 1px solid #f0f0f0; }
+    .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .info-label { color: #888; font-weight: 500; }
+    .info-value { color: #222; font-weight: 600; }
+    .footer { background: #fafbfc; padding: 12px; font-size: 11px; color: #999; text-align: center; border-top: 1px solid #eee; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h2>Digital ID</h2>
+ <br>
+<h2>BINAKAYAN HOSPITAL AND MEDICAL CENTER INC.</h2>
+ <br>
+<br> 
+
+    </div>
+    <div class="content">
+      <img src="<%= user.photoUrl %>" alt="Portrait" class="avatar">
+      <div class="name"><%= user.fullName %></div>
+      <div class="role"><%= user.role %></div>
+      <div class="dept"><%= user.department %></div>
+ </br>
+
+      <span class="badge <%= user.status %>">● <%= user.status %> ID</span>
+
+      <div class="info-list">
+        <div class="info-row">
+          <span class="info-label">ID Number</span>
+          <span class="info-value"><%= user.id %></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Issued</span>
+          <span class="info-value"><%= user.issuedDate %></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Valid Thru</span>
+          <span class="info-value"><%= user.expiryDate %></span>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      Verified at <%= scanTime %><br>Official System
+    </div>
+  </div>
+</body>
+</html>
