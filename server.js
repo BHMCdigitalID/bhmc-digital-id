@@ -76,7 +76,7 @@ app.get('/admin', (req, res) => {
       src="/images/BACKGROUND.jpg" 
       alt="Background" 
       class="w-full h-full object-cover opacity-55"
-      onerror="this.src='https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1920&q=80'"
+      onerror="this.src='/images/BACKGROUND.jpg'"
     >
     <div class="absolute inset-0 bg-slate-900/30"></div>
   </div>
