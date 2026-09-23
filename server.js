@@ -75,7 +75,7 @@ app.get('/admin', (req, res) => {
   <div class="flex items-center gap-4">
     <!-- Hospital Logo -->
     <div class="w-14 h-14 bg-white rounded-xl p-1 shadow flex items-center justify-center shrink-0">
-      <img src="/BHMC LOGO FINAL.png" alt="BHMC Logo" class="max-h-full max-w-full object-contain" onerror="this.style.display='none'">
+      <img src="/images/BHMC LOGO FINAL.png" alt="BHMC Logo" class="max-h-full max-w-full object-contain" onerror="this.style.display='none'">
     </div>
     <div>
       <h1 class="text-2xl font-bold leading-tight">BHMC Digital ID Portal</h1>
