@@ -41,12 +41,12 @@ app.get('/verify/:id', (req, res) => {
   res.render('profile', { user, scanTime });
 });
 
-// Admin form UI + Live Directory Table
+// Admin form UI + Live Directory Table with Search by ID
 app.get('/admin', (req, res) => {
   const users = getLocalUsers();
 
   const userRows = users.map(u => `
-    <tr class="border-b text-xs hover:bg-slate-50 transition">
+    <tr class="employee-row border-b text-xs hover:bg-slate-50 transition" data-id="${u.id.toUpperCase()}">
       <td class="p-3 font-mono font-bold text-slate-700">${u.id}</td>
       <td class="p-3 font-medium text-slate-800">${u.fullName}</td>
       <td class="p-3 text-slate-600">${u.department}</td>
@@ -143,14 +143,36 @@ app.get('/admin', (req, res) => {
       </button>
     </form>
 
-    <!-- EMPLOYEE ROSTER TABLE -->
+    <!-- EMPLOYEE ROSTER TABLE WITH SEARCH BY ID -->
     <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
-      <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
+      <div class="p-4 border-b bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div>
           <h3 class="font-bold text-slate-700 text-sm">Active Roster (${users.length} Records)</h3>
-          <p class="text-xs text-slate-500">Click "Edit" next to any employee to correct their details</p>
+          <p class="text-xs text-slate-500">Search by ID or click "Edit" to modify an employee</p>
+        </div>
+
+        <!-- Search Bar Input & Buttons -->
+        <div class="flex items-center gap-2">
+          <div class="relative">
+            <input 
+              type="text" 
+              id="searchIdInput" 
+              onkeyup="filterById()" 
+              placeholder="Search ID (e.g. ADM-768)..." 
+              class="border rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 uppercase w-48 sm:w-56"
+            >
+            <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+          </div>
+          <button 
+            type="button" 
+            onclick="clearSearch()" 
+            class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition"
+          >
+            Clear
+          </button>
         </div>
       </div>
+
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
@@ -162,8 +184,11 @@ app.get('/admin', (req, res) => {
               <th class="p-3">Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="rosterTableBody">
             ${userRows.length > 0 ? userRows : '<tr><td colspan="5" class="p-6 text-center text-xs text-slate-400">No records found.</td></tr>'}
+            <tr id="noMatchRow" class="hidden">
+              <td colspan="5" class="p-6 text-center text-xs text-slate-400 font-medium">No employee found matching that ID.</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -171,6 +196,35 @@ app.get('/admin', (req, res) => {
   </div>
 
   <script>
+    // Live Search by ID Filter
+    function filterById() {
+      const filter = document.getElementById('searchIdInput').value.trim().toUpperCase();
+      const rows = document.querySelectorAll('.employee-row');
+      let matches = 0;
+
+      rows.forEach(row => {
+        const id = row.getAttribute('data-id') || '';
+        if (id.includes(filter)) {
+          row.style.display = '';
+          matches++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      const noMatch = document.getElementById('noMatchRow');
+      if (matches === 0 && rows.length > 0) {
+        noMatch.classList.remove('hidden');
+      } else {
+        noMatch.classList.add('hidden');
+      }
+    }
+
+    function clearSearch() {
+      document.getElementById('searchIdInput').value = '';
+      filterById();
+    }
+
     function editUser(id, name, dept, role, issued, expiry, email, phone, photo) {
       document.getElementById('field_id').value = id;
       document.getElementById('field_name').value = decodeURIComponent(name);
