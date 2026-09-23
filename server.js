@@ -41,7 +41,7 @@ app.get('/verify/:id', (req, res) => {
   res.render('profile', { user, scanTime });
 });
 
-// Admin form UI + Live Directory Table with Search by ID
+// Admin form UI + Live Directory Table + Export to Excel/CSV
 app.get('/admin', (req, res) => {
   const users = getLocalUsers();
 
@@ -143,23 +143,23 @@ app.get('/admin', (req, res) => {
       </button>
     </form>
 
-    <!-- EMPLOYEE ROSTER TABLE WITH SEARCH BY ID -->
+    <!-- EMPLOYEE ROSTER TABLE WITH SEARCH & EXPORT -->
     <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
       <div class="p-4 border-b bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div>
           <h3 class="font-bold text-slate-700 text-sm">Active Roster (${users.length} Records)</h3>
-          <p class="text-xs text-slate-500">Search by ID or click "Edit" to modify an employee</p>
+          <p class="text-xs text-slate-500">Search by ID, edit records, or export to spreadsheet</p>
         </div>
 
-        <!-- Search Bar Input & Buttons -->
-        <div class="flex items-center gap-2">
+        <!-- Actions: Search & Export -->
+        <div class="flex flex-wrap items-center gap-2">
           <div class="relative">
             <input 
               type="text" 
               id="searchIdInput" 
               onkeyup="filterById()" 
-              placeholder="Search ID (e.g. ADM-768)..." 
-              class="border rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 uppercase w-48 sm:w-56"
+              placeholder="Search ID..." 
+              class="border rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 uppercase w-36 sm:w-44"
             >
             <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
@@ -169,6 +169,13 @@ app.get('/admin', (req, res) => {
             class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition"
           >
             Clear
+          </button>
+          <button 
+            type="button" 
+            onclick="exportToExcel()" 
+            class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 shadow transition"
+          >
+            📥 Export CSV
           </button>
         </div>
       </div>
@@ -196,6 +203,56 @@ app.get('/admin', (req, res) => {
   </div>
 
   <script>
+    // Embedded users array for instantaneous client-side export
+    const rosterData = ${JSON.stringify(users.map(u => ({
+      id: u.id,
+      fullName: u.fullName,
+      department: u.department,
+      role: u.role,
+      status: u.status || 'ACTIVE',
+      issuedDate: u.issuedDate || '',
+      expiryDate: u.expiryDate || '',
+      email: u.email || '',
+      phone: u.phone || '',
+      verifyUrl: 'https://bhmc-digital-id.vercel.app/verify/' + u.id
+    })))};
+
+    // Export to CSV (Compatible with Excel & Google Sheets)
+    function exportToExcel() {
+      if (!rosterData || rosterData.length === 0) {
+        alert('No employee data available to export.');
+        return;
+      }
+
+      const headers = ['Employee ID', 'Full Name', 'Department', 'Role', 'Status', 'Issued Date', 'Expiry Date', 'Email', 'Phone', 'Digital ID Link'];
+      
+      const csvRows = [headers.join(',')];
+
+      rosterData.forEach(emp => {
+        const row = [
+          emp.id,
+          emp.fullName,
+          emp.department,
+          emp.role,
+          emp.status,
+          emp.issuedDate,
+          emp.expiryDate,
+          emp.email,
+          emp.phone,
+          emp.verifyUrl
+        ].map(field => '"' + (field || '').toString().replace(/"/g, '""') + '"');
+        csvRows.push(row.join(','));
+      });
+
+      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csvRows.join('\\r\\n'));
+      const link = document.createElement('a');
+      link.setAttribute('href', csvContent);
+      link.setAttribute('download', 'BHMC_Employee_Roster_' + new Date().toISOString().slice(0, 10) + '.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     // Live Search by ID Filter
     function filterById() {
       const filter = document.getElementById('searchIdInput').value.trim().toUpperCase();
