@@ -69,8 +69,20 @@ app.get('/admin', (req, res) => {
   <title>BHMC Digital ID Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 min-h-screen p-4 sm:p-8 font-sans">
-  <div class="max-w-4xl mx-auto space-y-8">
+<body class="bg-slate-900 min-h-screen p-4 sm:p-8 font-sans relative overflow-x-hidden">
+  <!-- Fixed Fullscreen Background with 55% Opacity -->
+  <div class="fixed inset-0 z-0 pointer-events-none">
+    <img 
+      src="/images/BACKGROUND.jpg" 
+      alt="Background" 
+      class="w-full h-full object-cover opacity-55"
+      onerror="this.src='https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1920&q=80'"
+    >
+    <div class="absolute inset-0 bg-slate-900/30"></div>
+  </div>
+
+  <!-- Main Content Layer -->
+  <div class="relative z-10 max-w-4xl mx-auto space-y-8">
     <header class="bg-emerald-700 text-white p-5 rounded-2xl shadow flex justify-between items-center gap-4">
   <div class="flex items-center gap-3 sm:gap-4">
     <!-- Clean, properly proportioned transparent logo -->
