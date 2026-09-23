@@ -7,10 +7,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', [
+  path.join(__dirname, 'views'),
+  path.join(process.cwd(), 'views')
+]);
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 
 // Public verification endpoint
 app.get('/verify/:id', (req, res) => {
