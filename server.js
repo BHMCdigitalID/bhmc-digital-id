@@ -53,7 +53,7 @@ app.get('/admin', (req, res) => {
       <td class="p-3 text-slate-600">${u.role}</td>
       <td class="p-3">
         <button type="button" 
-          onclick="editUser('${u.id}', '${encodeURIComponent(u.fullName)}', '${encodeURIComponent(u.department)}', '${encodeURIComponent(u.role)}', '${u.issuedDate || ''}', '${u.expiryDate || ''}', '${u.email || ''}', '${u.phone || ''}', '${encodeURIComponent(u.photoUrl || '')}')" 
+          onclick="editUser('${u.id}', '${encodeURIComponent(u.fullName)}', '${encodeURIComponent(u.department)}', '${encodeURIComponent(u.role)}', '${u.issuedDate || ''}', '${u.email || ''}', '${u.phone || ''}', '${encodeURIComponent(u.photoUrl || '')}')" 
           class="bg-slate-100 hover:bg-emerald-50 text-emerald-700 border border-emerald-300 px-3 py-1 rounded-md font-semibold transition">
           Edit
         </button>
@@ -105,13 +105,9 @@ app.get('/admin', (req, res) => {
           <label class="block text-xs font-semibold text-slate-600 mb-1">Role / Position *</label>
           <input type="text" id="field_role" name="role" placeholder="HEAD NURSE" required class="w-full border rounded-lg p-2.5 text-sm uppercase outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Issued Date *</label>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Date of Employment *</label>
           <input type="date" id="field_issued" name="issuedDate" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Expiry Date (Optional)</label>
-          <input type="date" id="field_expiry" name="expiryDate" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
@@ -203,7 +199,7 @@ app.get('/admin', (req, res) => {
   </div>
 
   <script>
-    // Embedded users array for instantaneous client-side export
+    // Embedded users array for CSV export
     const rosterData = ${JSON.stringify(users.map(u => ({
       id: u.id,
       fullName: u.fullName,
@@ -211,20 +207,19 @@ app.get('/admin', (req, res) => {
       role: u.role,
       status: u.status || 'ACTIVE',
       issuedDate: u.issuedDate || '',
-      expiryDate: u.expiryDate || '',
       email: u.email || '',
       phone: u.phone || '',
       verifyUrl: 'https://bhmc-digital-id.vercel.app/verify/' + u.id
     })))};
 
-    // Export to CSV (Compatible with Excel & Google Sheets)
+    // Export to CSV
     function exportToExcel() {
       if (!rosterData || rosterData.length === 0) {
         alert('No employee data available to export.');
         return;
       }
 
-      const headers = ['Employee ID', 'Full Name', 'Department', 'Role', 'Status', 'Issued Date', 'Expiry Date', 'Email', 'Phone', 'Digital ID Link'];
+      const headers = ['Employee ID', 'Full Name', 'Department', 'Role', 'Status', 'Date of Employment', 'Email', 'Phone', 'Digital ID Link'];
       
       const csvRows = [headers.join(',')];
 
@@ -236,7 +231,6 @@ app.get('/admin', (req, res) => {
           emp.role,
           emp.status,
           emp.issuedDate,
-          emp.expiryDate,
           emp.email,
           emp.phone,
           emp.verifyUrl
@@ -282,13 +276,12 @@ app.get('/admin', (req, res) => {
       filterById();
     }
 
-    function editUser(id, name, dept, role, issued, expiry, email, phone, photo) {
+    function editUser(id, name, dept, role, issued, email, phone, photo) {
       document.getElementById('field_id').value = id;
       document.getElementById('field_name').value = decodeURIComponent(name);
       document.getElementById('field_dept').value = decodeURIComponent(dept);
       document.getElementById('field_role').value = decodeURIComponent(role);
       document.getElementById('field_issued').value = issued;
-      document.getElementById('field_expiry').value = expiry;
       document.getElementById('field_email').value = email;
       document.getElementById('field_phone').value = phone;
 
@@ -365,7 +358,7 @@ app.get('/admin', (req, res) => {
 
 // Admin submit route: updates users.json directly on GitHub
 app.post('/admin/add', async (req, res) => {
-  const { id, fullName, role, department, issuedDate, expiryDate, email, phone, photoUrl, pin } = req.body;
+  const { id, fullName, role, department, issuedDate, email, phone, photoUrl, pin } = req.body;
 
   const validPin = process.env.ADMIN_PASSWORD || 'bhmcdigitalid2026';
   if (pin !== validPin) {
@@ -424,7 +417,6 @@ app.post('/admin/add', async (req, res) => {
       department: department.trim().toUpperCase(),
       status: 'ACTIVE',
       issuedDate: issuedDate || '',
-      expiryDate: expiryDate || '',
       photoUrl: resolvedPhoto,
       email: email ? email.trim() : '',
       phone: phone ? phone.trim() : ''
