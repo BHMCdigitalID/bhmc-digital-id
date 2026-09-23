@@ -41,7 +41,7 @@ app.get('/verify/:id', (req, res) => {
   res.render('profile', { user, scanTime });
 });
 
-// Admin form UI + Live Directory Table + Export to Excel/CSV
+// Admin form UI + Live Directory Table + Password-Protected CSV Export
 app.get('/admin', (req, res) => {
   const users = getLocalUsers();
 
@@ -130,7 +130,7 @@ app.get('/admin', (req, res) => {
 
         <div class="sm:col-span-2">
           <label class="block text-xs font-semibold text-slate-600 mb-1">Admin Security PIN / Password *</label>
-          <input type="password" name="pin" placeholder="Enter portal password" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+          <input type="password" id="field_pin" name="pin" placeholder="Enter portal password" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
       </div>
 
@@ -139,7 +139,7 @@ app.get('/admin', (req, res) => {
       </button>
     </form>
 
-    <!-- EMPLOYEE ROSTER TABLE WITH SEARCH & EXPORT -->
+    <!-- EMPLOYEE ROSTER TABLE WITH SEARCH & PASSWORD-PROTECTED EXPORT -->
     <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
       <div class="p-4 border-b bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div>
@@ -147,7 +147,7 @@ app.get('/admin', (req, res) => {
           <p class="text-xs text-slate-500">Search by ID, edit records, or export to spreadsheet</p>
         </div>
 
-        <!-- Actions: Search & Export -->
+        <!-- Actions: Search & Protected Export -->
         <div class="flex flex-wrap items-center gap-2">
           <div class="relative">
             <input 
@@ -168,10 +168,10 @@ app.get('/admin', (req, res) => {
           </button>
           <button 
             type="button" 
-            onclick="exportToExcel()" 
+            onclick="exportToExcelSecure()" 
             class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 shadow transition"
           >
-            📥 Export CSV
+            🔒 Export CSV
           </button>
         </div>
       </div>
@@ -212,15 +212,26 @@ app.get('/admin', (req, res) => {
       verifyUrl: 'https://bhmc-digital-id.vercel.app/verify/' + u.id
     })))};
 
-    // Export to CSV
-    function exportToExcel() {
+    // Password-Protected Export to CSV
+    function exportToExcelSecure() {
       if (!rosterData || rosterData.length === 0) {
         alert('No employee data available to export.');
         return;
       }
 
-      const headers = ['Employee ID', 'Full Name', 'Department', 'Role', 'Status', 'Date of Employment', 'Email', 'Phone', 'Digital ID Link'];
+      // Prompt for security password
+      const enteredPin = prompt('🔒 Admin Security PIN / Password required to export employee records:');
       
+      if (!enteredPin) return; // User clicked Cancel or entered nothing
+
+      // Check entered PIN against server configured PIN
+      const expectedPin = '${process.env.ADMIN_PASSWORD || 'bhmcdigitalid2026'}';
+      if (enteredPin !== expectedPin) {
+        alert('❌ Unauthorized: Incorrect Admin Security Password.');
+        return;
+      }
+
+      const headers = ['Employee ID', 'Full Name', 'Department', 'Role', 'Status', 'Date of Employment', 'Email', 'Phone', 'Digital ID Link'];
       const csvRows = [headers.join(',')];
 
       rosterData.forEach(emp => {
