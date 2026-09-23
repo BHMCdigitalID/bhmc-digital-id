@@ -93,7 +93,7 @@ app.get('/admin', (req, res) => {
         </div>
       </div>
       <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow transition">
-        Submit & Commit to users.json
+        Save and Submit
       </button>
     </form>
   </div>
