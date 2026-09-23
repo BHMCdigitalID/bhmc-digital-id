@@ -12,8 +12,9 @@ app.set('views', [
   path.join(process.cwd(), 'views')
 ]);
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// Allow larger payloads for photo uploads
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '10mb' }));
 
 // Public verification endpoint
 app.get('/verify/:id', (req, res) => {
@@ -29,14 +30,14 @@ app.get('/verify/:id', (req, res) => {
   res.render('profile', { user, scanTime });
 });
 
-// Admin form UI - Served directly as inline HTML
+// Admin form UI - With File Upload Preview and Compression
 app.get('/admin', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BHMC ID - HR/IT Portal</title>
+  <title>BHMC Digital ID Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 sm:p-8 font-sans">
@@ -49,7 +50,7 @@ app.get('/admin', (req, res) => {
       <span class="bg-emerald-800 text-xs px-3 py-1 rounded-full uppercase tracking-wider font-semibold">Staff Only</span>
     </header>
 
-    <form action="/admin/add" method="POST" class="bg-white p-6 rounded-2xl shadow space-y-4">
+    <form id="adminForm" action="/admin/add" method="POST" class="bg-white p-6 rounded-2xl shadow space-y-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Employee ID *</label>
@@ -83,20 +84,77 @@ app.get('/admin', (req, res) => {
           <label class="block text-xs font-semibold text-slate-600 mb-1">Phone</label>
           <input type="text" name="phone" placeholder="+63 912 345 6789" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
+
+        <!-- File Upload Section -->
         <div class="sm:col-span-2">
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Photo URL (Optional)</label>
-          <input type="text" name="photoUrl" placeholder="/images/ADM-768.png or direct web image URL" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Employee Photo (JPG or PNG)</label>
+          <div class="flex items-center gap-4 border border-dashed border-slate-300 rounded-lg p-3">
+            <input type="file" id="photoFileInput" accept="image/*" class="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+            <img id="photoPreview" class="w-12 h-12 rounded-full object-cover border hidden" alt="Preview">
+          </div>
+          <!-- Hidden input storing Base64 string -->
+          <input type="hidden" name="photoUrl" id="photoBase64">
         </div>
+
         <div class="sm:col-span-2">
           <label class="block text-xs font-semibold text-slate-600 mb-1">Admin Security PIN / Password *</label>
           <input type="password" name="pin" placeholder="Enter portal password" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
       </div>
-      <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow transition">
-        Save and Submit
+
+      <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow transition">
+        SAVE & SUBMIT
       </button>
     </form>
   </div>
+
+  <script>
+    const fileInput = document.getElementById('photoFileInput');
+    const preview = document.getElementById('photoPreview');
+    const base64Input = document.getElementById('photoBase64');
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          // Resize image on client to max 300x300 to keep JSON light and fast
+          const canvas = document.createElement('canvas');
+          const maxDim = 300;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height *= maxDim / width;
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width *= maxDim / height;
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG with 0.75 quality
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          base64Input.value = compressedDataUrl;
+          preview.src = compressedDataUrl;
+          preview.classList.remove('hidden');
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
 </body>
 </html>`);
 });
@@ -110,7 +168,6 @@ app.post('/admin/add', async (req, res) => {
     return res.status(401).send(`
       <div style="font-family:sans-serif; text-align:center; padding: 50px;">
         <h2 style="color:#dc2626;">Incorrect Admin Security Password</h2>
-        <p>Please go back and verify your credentials.</p>
         <a href="/admin" style="color:#059669; font-weight:bold;">← Go Back</a>
       </div>
     `);
@@ -155,7 +212,7 @@ app.post('/admin/add', async (req, res) => {
       status: 'ACTIVE',
       issuedDate: issuedDate || '',
       expiryDate: expiryDate || '',
-      photoUrl: photoUrl ? photoUrl.trim() : `/images/${cleanId}.png`,
+      photoUrl: photoUrl && photoUrl.trim() !== '' ? photoUrl : `/images/${cleanId}.png`,
       email: email ? email.trim() : '',
       phone: phone ? phone.trim() : ''
     };
@@ -176,14 +233,14 @@ app.post('/admin/add', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: `Auto-add employee ${cleanId} via Admin Portal`,
+        message: `Add employee ${cleanId}`,
         content: updatedContent,
         sha: sha,
         branch: 'main'
       })
     });
 
-    if (!putRes.ok) throw new Error('Failed to commit update to GitHub repository');
+    if (!putRes.ok) throw new Error('Failed to save update to GitHub');
 
     const targetUrl = `https://bhmc-digital-id.vercel.app/verify/${cleanId}`;
     const qrImage = await QRCode.toDataURL(targetUrl, { width: 400, margin: 2 });
@@ -196,10 +253,10 @@ app.post('/admin/add', async (req, res) => {
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen p-8 flex items-center justify-center font-sans">
-  <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full text-center space-y-4 border border-emerald-200">
+  <div class="bg-white p-8 rounded-2xl shadow max-w-md w-full text-center space-y-4 border border-emerald-200">
     <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">✓</div>
-    <h2 class="text-xl font-bold text-slate-800">Employee Saved Successfully!</h2>
-    <p class="text-xs text-slate-500">Record committed to GitHub. Verification goes live in ~20 seconds.</p>
+    <h2 class="text-xl font-bold text-slate-800">Employee Created Successfully!</h2>
+    <p class="text-xs text-slate-500">Record saved. Verification goes live in ~20 seconds.</p>
     <img src="${qrImage}" alt="QR Code" class="w-48 h-48 mx-auto border p-2 rounded-xl shadow-inner">
     <p class="font-mono text-base font-bold text-slate-700">${cleanId}</p>
     <div class="space-y-2 pt-2">
