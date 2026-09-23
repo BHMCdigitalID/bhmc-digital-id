@@ -71,13 +71,18 @@ app.get('/admin', (req, res) => {
 </head>
 <body class="bg-slate-100 min-h-screen p-4 sm:p-8 font-sans">
   <div class="max-w-4xl mx-auto space-y-8">
-    <header class="bg-emerald-700 text-white p-6 rounded-2xl shadow flex justify-between items-center gap-4">
-  <div class="flex items-center gap-4">
-    <!-- Standalone Larger Logo -->
-    <img src="/images/logo.png" alt="BHMC Logo" class="w-20 h-20 object-contain drop-shadow shrink-0">
+    <header class="bg-emerald-700 text-white p-5 rounded-2xl shadow flex justify-between items-center gap-4">
+  <div class="flex items-center gap-3 sm:gap-4">
+    <!-- Clean, properly proportioned transparent logo -->
+    <img 
+      src="/images/BHMC LOGO FINAL.png" 
+      alt="BHMC Logo" 
+      class="w-14 h-14 sm:w-16 sm:h-16 object-contain drop-shadow shrink-0"
+      onerror="if (this.src.includes('/images/logo.png')) { this.src = '/logo.png'; }"
+    >
     <div>
-      <h1 class="text-2xl font-bold leading-tight">BHMC Digital ID Portal</h1>
-      <p class="text-emerald-100 text-sm">Employee Enrollment & Instant QR</p>
+      <h1 class="text-xl sm:text-2xl font-bold leading-tight">BHMC Digital ID Portal</h1>
+      <p class="text-emerald-100 text-xs sm:text-sm">Employee Enrollment & Instant QR</p>
     </div>
   </div>
   <span class="bg-emerald-800 text-xs px-3 py-1 rounded-full uppercase tracking-wider font-semibold shrink-0">Staff Only</span>
